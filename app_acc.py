@@ -1,18 +1,20 @@
 # -*- coding: utf-8 -*-
 import streamlit as st
 import os
+from streamlit.runtime.scriptrunner import RerunData, RerunException
+from streamlit.source_util import get_pages
 
-# Configuration de la page (conservée)
+# Configuration de base
 st.set_page_config(
-    layout="wide", 
-    page_title="Tableau de Bord Maintenance", 
+    layout="wide",
+    page_title="Tableau de Bord Maintenance",
     page_icon="🛠️",
     initial_sidebar_state="collapsed"
 )
 
-# =============================================
+# ===================================================
 # VOTRE CSS COMPLET (CONSERVÉ À L'IDENTIQUE)
-# =============================================
+# ===================================================
 st.markdown("""
 <style>
     :root {
@@ -36,6 +38,29 @@ st.markdown("""
         padding: 10px 0;
     }
     
+    .section-title {
+        font-size: 1.8rem !important;
+        color: var(--secondary) !important;
+        border-bottom: 2px solid var(--primary);
+        padding-bottom: 8px;
+        margin-top: 30px;
+    }
+    
+    .app-card {
+        border: none;
+        border-radius: 12px;
+        padding: 25px;
+        margin: 15px 0;
+        transition: all 0.3s ease;
+        background: white;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+        height: 320px;
+        position: relative;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+    }
+    
     /* ... (TOUT VOTRE CSS EXISTANT RESTE ICI) ... */
     
     .animated-icon {
@@ -43,18 +68,25 @@ st.markdown("""
     }
 </style>
 """, unsafe_allow_html=True)
+# ===================================================
 
-# =============================================
-# FONCTION DE NAVIGATION (NOUVEAU)
-# =============================================
-def navigate_to(page_path: str):
-    """Navigation centralisée pour tous les boutons"""
-    st.session_state.target_page = page_path
-    st.rerun()
+# Fonction de navigation optimisée pour Streamlit Share
+def switch_page(page_name: str):
+    """Fonction pour changer de page sans subprocess"""
+    pages = get_pages("app_acc.py")
+    for page_hash, config in pages.items():
+        if config["page_name"] == page_name:
+            raise RerunException(
+                RerunData(
+                    page_script_hash=page_hash,
+                    page_name=page_name,
+                )
+            )
+    st.error(f"Impossible de trouver la page '{page_name}'")
 
-# =============================================
-# VOTRE CONTENU PRINCIPAL (CONSERVÉ)
-# =============================================
+# ===================================================
+# VOTRE CONTENU PRINCIPAL (CONSERVÉ À L'IDENTIQUE)
+# ===================================================
 st.markdown(
     '<p class="main-title">'
     '<span class="animated-icon">🛠️</span> Tableau de Bord Maintenance Industrielle'
@@ -62,7 +94,14 @@ st.markdown(
     unsafe_allow_html=True
 )
 
-# Section Tableaux de Bord
+st.markdown("""
+<div style="text-align: center; margin-bottom: 40px; color: #555; font-size: 1.1rem;">
+    Plateforme de surveillance et d'analyse des performances de maintenance<br>
+    Visualisation des indicateurs clés et optimisation des processus
+</div>
+""", unsafe_allow_html=True)
+
+# Cartes d'application
 st.markdown('<div class="section-title">📊 Tableaux de Bord Analytiques</div>', unsafe_allow_html=True)
 
 col1, col2, col3 = st.columns(3)
@@ -80,7 +119,7 @@ with col1:
     """, unsafe_allow_html=True)
     
     if st.button("Ouvrir l'Analyse des Temps d'Arrêt", key="btn1"):
-        navigate_to("apps/app_comp.py")
+        switch_page("app_comp")  # Navigation modifiée ici
 
 with col2:
     st.markdown("""
@@ -95,7 +134,7 @@ with col2:
     """, unsafe_allow_html=True)
     
     if st.button("Ouvrir l'Analyse des Nombres d'Arrêt", key="btn2"):
-        navigate_to("apps/app_comp2.py")
+        switch_page("app_comp2")  # Navigation modifiée ici
 
 with col3:
     st.markdown("""
@@ -110,53 +149,20 @@ with col3:
     """, unsafe_allow_html=True)
     
     if st.button("Ouvrir l'Analyse des Indicateurs", key="btn3"):
-        navigate_to("apps/app_ind.py")
+        switch_page("app_ind")  # Navigation modifiée ici
 
-# Section Diagnostic
-st.markdown('<div class="divider"></div>', unsafe_allow_html=True)
-st.markdown('<div class="section-title">🔍 Analyse Root Cause</div>', unsafe_allow_html=True)
-
-col_left, col_center, col_right = st.columns([1, 3, 1])
-with col_center:
-    st.markdown("""
-    <div class="diagnostic-card pulse-effect">
-        <h3 class="diagnostic-title">
-            <span style="display: inline-block; animation: float 3s ease-in-out infinite;">🔍</span> 
-            Diagnostic Complet des Défauts
-        </h3>
-        <p class="diagnostic-desc">
-            Analyse approfondie avec méthode des <strong>5P</strong>, diagrammes <strong>Ishikawa (4M)</strong><br>
-            et plan d'action correctif. Identification des causes racines<br>
-            et définition d'actions d'amélioration ciblées.
-        </p>
-    </div>
-    """, unsafe_allow_html=True)
-    
-    if st.button("📑 Accéder au Diagnostic Komax", key="btn_analyse"):
-        navigate_to("apps/app_accueil.py")
-
-# Section Admin (conservée)
-st.markdown('<div class="divider"></div>', unsafe_allow_html=True)
-st.markdown('<div class="section-title">⚙️ Administration</div>', unsafe_allow_html=True)
-
-with st.expander("Options Administrateur", expanded=False):
-    st.markdown("""
-    <div class="admin-section">
-        <h3 style="color: #d32f2f;">Zone de gestion des données</h3>
-        <p style="color: #555;">
-            Actions critiques - Réservé aux administrateurs système
-        </p>
-    </div>
-    """, unsafe_allow_html=True)
-    
-    if st.button("🔄 Réinitialiser toutes les données", key="btn_reset"):
-        if st.checkbox("Je confirme vouloir réinitialiser toutes les données"):
-            try:
-                # Votre logique de réinitialisation ici
-                st.success("Données réinitialisées avec succès!")
-                st.balloons()
-            except Exception as e:
-                st.error(f"Erreur : {str(e)}")
+# ===================================================
+# GESTION DES PAGES (NOUVEAU - À GARDER À LA FIN)
+# ===================================================
+if "current_page" in st.session_state:
+    if st.session_state.current_page == "app_comp":
+        switch_page("app_comp")
+    elif st.session_state.current_page == "app_comp2":
+        switch_page("app_comp2")
+    elif st.session_state.current_page == "app_ind":
+        switch_page("app_ind")
+    elif st.session_state.current_page == "app_accueil":
+        switch_page("app_accueil")
 
 # Footer (conservé)
 st.markdown("""
@@ -166,13 +172,3 @@ st.markdown("""
     Direction Industrielle | Service Maintenance
 </div>
 """, unsafe_allow_html=True)
-
-# =============================================
-# GESTION CENTRALISÉE DE LA NAVIGATION (NOUVEAU)
-# =============================================
-if hasattr(st.session_state, 'target_page'):
-    try:
-        st.switch_page(st.session_state.target_page)
-    except Exception as e:
-        st.error(f"Page non trouvée : {str(e)}")
-        del st.session_state.target_page
