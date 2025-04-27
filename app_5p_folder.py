@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Importation des bibliothèques nécessaires
 import streamlit as st  # Pour l'interface web
 import pandas as pd  # Pour la manipulation des données
